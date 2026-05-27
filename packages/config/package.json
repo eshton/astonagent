@@ -1,0 +1,12 @@
+{
+  "name": "@astonagent/config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./tsconfig.base.json": "./tsconfig.base.json",
+    "./tsconfig.lib.json": "./tsconfig.lib.json",
+    "./tsconfig.react.json": "./tsconfig.react.json",
+    "./tailwind.preset": "./tailwind.preset.ts"
+  }
+}

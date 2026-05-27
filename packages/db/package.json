@@ -1,0 +1,63 @@
+{
+  "name": "@astonagent/db",
+  "version": "0.1.0",
+  "description": "Drizzle-based persistence for astonagent (SQLite + Postgres).",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./schema/sqlite": {
+      "types": "./dist/schema/sqlite.d.ts",
+      "import": "./dist/schema/sqlite.js",
+      "require": "./dist/schema/sqlite.cjs"
+    },
+    "./schema/pg": {
+      "types": "./dist/schema/pg.d.ts",
+      "import": "./dist/schema/pg.js",
+      "require": "./dist/schema/pg.cjs"
+    }
+  },
+  "bin": {
+    "aston-db": "./bin/aston-db.mjs"
+  },
+  "files": ["dist", "bin", "migrations", "README.md", "LICENSE"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "lint": "echo 'lint: skipped (no config)'",
+    "clean": "rm -rf dist .turbo"
+  },
+  "dependencies": {
+    "@astonagent/core": "workspace:*",
+    "drizzle-orm": "^0.38.3"
+  },
+  "peerDependencies": {
+    "better-sqlite3": "*",
+    "postgres": "*"
+  },
+  "peerDependenciesMeta": {
+    "better-sqlite3": { "optional": true },
+    "postgres": { "optional": true }
+  },
+  "devDependencies": {
+    "@astonagent/config": "workspace:*",
+    "@types/better-sqlite3": "^7.6.12",
+    "better-sqlite3": "^11.7.0",
+    "drizzle-kit": "^0.30.1",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.8"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

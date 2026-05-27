@@ -1,0 +1,36 @@
+{
+  "name": "@astonagent/example",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "echo 'lint: skipped'",
+    "typecheck": "tsc --noEmit",
+    "db:migrate": "aston-db migrate --dialect sqlite --url ./aston.sqlite",
+    "test": "echo 'no tests'",
+    "clean": "rm -rf .next .turbo aston.sqlite"
+  },
+  "dependencies": {
+    "@astonagent/core": "workspace:*",
+    "@astonagent/db": "workspace:*",
+    "@astonagent/next": "workspace:*",
+    "@astonagent/providers": "workspace:*",
+    "@astonagent/ui": "workspace:*",
+    "better-sqlite3": "^11.7.0",
+    "drizzle-orm": "^0.38.3",
+    "next": "^15.1.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.0.7",
+    "@types/react-dom": "^19.0.3",
+    "typescript": "^5.7.3"
+  }
+}

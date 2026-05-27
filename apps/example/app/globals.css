@@ -1,0 +1,170 @@
+@import "@astonagent/ui/styles.css";
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--aston-bg);
+  color: var(--aston-fg);
+  font-family: var(--aston-font-sans);
+}
+
+#__next,
+body > div {
+  height: 100%;
+}
+
+/* Themes — defined here so the example app can demonstrate swapping without
+   requiring users to write CSS. Real apps would put these in their own files. */
+
+[data-aston-theme="claude-classic"] {
+  --aston-bg: #f5f1ea;
+  --aston-fg: #1a1815;
+  --aston-muted: #8c8676;
+  --aston-border: #e0d9c8;
+  --aston-accent: #cc785c;
+  --aston-bubble-user-bg: #cc785c;
+  --aston-bubble-user-fg: #ffffff;
+  --aston-bubble-assistant-bg: #ffffff;
+  --aston-bubble-assistant-fg: #1a1815;
+  --aston-tool-bg: #faf6ef;
+  --aston-tool-fg: #1a1815;
+  --aston-tool-border: #e0d9c8;
+  --aston-composer-bg: #faf6ef;
+  --aston-composer-border: #e0d9c8;
+  --aston-composer-fg: #1a1815;
+  --aston-radius: 16px;
+  --aston-font-sans: "Charter", "Iowan Old Style", Georgia, serif;
+}
+
+[data-aston-theme="vercel-mono"] {
+  --aston-bg: #000000;
+  --aston-fg: #ededed;
+  --aston-muted: #888888;
+  --aston-border: #2a2a2a;
+  --aston-accent: #ffffff;
+  --aston-bubble-user-bg: #ffffff;
+  --aston-bubble-user-fg: #000000;
+  --aston-bubble-assistant-bg: #111111;
+  --aston-bubble-assistant-fg: #ededed;
+  --aston-tool-bg: #0a0a0a;
+  --aston-tool-fg: #ededed;
+  --aston-tool-border: #2a2a2a;
+  --aston-composer-bg: #0a0a0a;
+  --aston-composer-border: #2a2a2a;
+  --aston-composer-fg: #ededed;
+  --aston-radius: 6px;
+  --aston-font-sans: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+[data-aston-theme="terminal-green"] {
+  --aston-bg: #0a0e0a;
+  --aston-fg: #50fa7b;
+  --aston-muted: #6272a4;
+  --aston-border: #1a2a1a;
+  --aston-accent: #50fa7b;
+  --aston-bubble-user-bg: #1a2a1a;
+  --aston-bubble-user-fg: #50fa7b;
+  --aston-bubble-assistant-bg: #0a0e0a;
+  --aston-bubble-assistant-fg: #50fa7b;
+  --aston-tool-bg: #0a0e0a;
+  --aston-tool-fg: #f1fa8c;
+  --aston-tool-border: #1a2a1a;
+  --aston-composer-bg: #0a0e0a;
+  --aston-composer-border: #1a2a1a;
+  --aston-composer-fg: #50fa7b;
+  --aston-radius: 2px;
+  --aston-font-sans: var(--aston-font-mono);
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  height: 100vh;
+}
+
+.sidebar {
+  border-right: 1px solid var(--aston-border);
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--aston-bg);
+}
+
+.sidebar h1 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.sidebar a {
+  display: block;
+  padding: 8px 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--aston-fg);
+  font-size: 14px;
+}
+.sidebar a:hover {
+  background: var(--aston-border);
+}
+.sidebar a[data-active="true"] {
+  background: var(--aston-border);
+  font-weight: 500;
+}
+
+.sidebar-section {
+  font-size: 12px;
+  color: var(--aston-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 8px;
+}
+
+.sidebar button {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--aston-border);
+  background: transparent;
+  color: var(--aston-fg);
+  cursor: pointer;
+  font-size: 14px;
+  text-align: left;
+}
+.sidebar button:hover {
+  background: var(--aston-border);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--aston-border);
+  gap: 12px;
+}
+.topbar-title {
+  font-weight: 600;
+}
+.topbar select {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--aston-border);
+  background: var(--aston-bg);
+  color: var(--aston-fg);
+  font-size: 13px;
+}
+
+.chat-wrap {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}

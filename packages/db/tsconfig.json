@@ -1,0 +1,4 @@
+{
+  "extends": "@astonagent/config/tsconfig.lib.json",
+  "include": ["src/**/*"]
+}

@@ -1,0 +1,250 @@
+/**
+ * @astonagent/ui — default theme tokens.
+ *
+ * Every visual property in astonagent reads from one of these variables. To
+ * theme, set the same variables under a `[data-aston-theme="<name>"]` selector
+ * (or override globally on :root).
+ */
+
+[data-aston-theme],
+.aston-root {
+  --aston-bg: #ffffff;
+  --aston-fg: #0f0f12;
+  --aston-muted: #6b7280;
+  --aston-border: #e5e7eb;
+  --aston-accent: #2563eb;
+
+  --aston-bubble-user-bg: #2563eb;
+  --aston-bubble-user-fg: #ffffff;
+  --aston-bubble-assistant-bg: #f3f4f6;
+  --aston-bubble-assistant-fg: #0f0f12;
+
+  --aston-tool-bg: #fafafa;
+  --aston-tool-fg: #0f0f12;
+  --aston-tool-border: #e5e7eb;
+
+  --aston-radius: 12px;
+  --aston-radius-sm: 8px;
+  --aston-gap: 12px;
+
+  --aston-font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --aston-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  --aston-composer-bg: #ffffff;
+  --aston-composer-border: #d1d5db;
+  --aston-composer-fg: #0f0f12;
+}
+
+/* Dark default — opt in via [data-aston-theme="aston-dark"] */
+[data-aston-theme="aston-dark"] {
+  --aston-bg: #0b0b10;
+  --aston-fg: #f3f0ea;
+  --aston-muted: #9ca3af;
+  --aston-border: #1f2230;
+  --aston-accent: #818cf8;
+
+  --aston-bubble-user-bg: #818cf8;
+  --aston-bubble-user-fg: #0b0b10;
+  --aston-bubble-assistant-bg: #1a1a22;
+  --aston-bubble-assistant-fg: #f3f0ea;
+
+  --aston-tool-bg: #14141c;
+  --aston-tool-fg: #f3f0ea;
+  --aston-tool-border: #2a2d3a;
+
+  --aston-composer-bg: #14141c;
+  --aston-composer-border: #2a2d3a;
+  --aston-composer-fg: #f3f0ea;
+}
+
+.aston-chat {
+  font-family: var(--aston-font-sans);
+  background: var(--aston-bg);
+  color: var(--aston-fg);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.aston-message-list {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--aston-gap);
+}
+
+.aston-row {
+  display: flex;
+  width: 100%;
+}
+
+.aston-row[data-role="user"] {
+  justify-content: flex-end;
+}
+
+.aston-row[data-role="assistant"],
+.aston-row[data-role="tool"] {
+  justify-content: flex-start;
+}
+
+.aston-bubble {
+  max-width: 78%;
+  padding: 10px 14px;
+  border-radius: var(--aston-radius);
+  line-height: 1.45;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+.aston-bubble[data-role="user"] {
+  background: var(--aston-bubble-user-bg);
+  color: var(--aston-bubble-user-fg);
+  border-bottom-right-radius: var(--aston-radius-sm);
+}
+
+.aston-bubble[data-role="assistant"] {
+  background: var(--aston-bubble-assistant-bg);
+  color: var(--aston-bubble-assistant-fg);
+  border-bottom-left-radius: var(--aston-radius-sm);
+}
+
+.aston-bubble p {
+  margin: 0 0 8px 0;
+}
+.aston-bubble p:last-child {
+  margin-bottom: 0;
+}
+.aston-bubble code {
+  font-family: var(--aston-font-mono);
+  font-size: 0.9em;
+  background: rgba(0, 0, 0, 0.06);
+  padding: 1px 4px;
+  border-radius: 4px;
+}
+.aston-bubble[data-role="user"] code {
+  background: rgba(255, 255, 255, 0.18);
+}
+.aston-bubble pre {
+  font-family: var(--aston-font-mono);
+  font-size: 0.9em;
+  background: rgba(0, 0, 0, 0.06);
+  padding: 10px 12px;
+  border-radius: var(--aston-radius-sm);
+  overflow-x: auto;
+  margin: 8px 0;
+  white-space: pre;
+}
+
+.aston-tool-card {
+  border: 1px solid var(--aston-tool-border);
+  background: var(--aston-tool-bg);
+  color: var(--aston-tool-fg);
+  border-radius: var(--aston-radius-sm);
+  padding: 8px 12px;
+  font-family: var(--aston-font-mono);
+  font-size: 13px;
+  max-width: 78%;
+}
+.aston-tool-card[data-error="true"] {
+  border-color: #dc2626;
+}
+.aston-tool-card-name {
+  font-weight: 600;
+  font-family: var(--aston-font-sans);
+  font-size: 13px;
+}
+.aston-tool-card-section {
+  margin-top: 4px;
+  color: var(--aston-muted);
+  font-size: 12px;
+}
+.aston-tool-card pre {
+  margin: 4px 0 0 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.aston-composer {
+  border-top: 1px solid var(--aston-border);
+  padding: 12px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  background: var(--aston-composer-bg);
+}
+.aston-composer textarea {
+  flex: 1 1 auto;
+  resize: none;
+  border: 1px solid var(--aston-composer-border);
+  background: transparent;
+  color: var(--aston-composer-fg);
+  border-radius: var(--aston-radius);
+  padding: 10px 14px;
+  font-family: var(--aston-font-sans);
+  font-size: 15px;
+  outline: none;
+  max-height: 200px;
+  line-height: 1.5;
+}
+.aston-composer textarea:focus {
+  border-color: var(--aston-accent);
+}
+.aston-composer button {
+  padding: 10px 16px;
+  border-radius: var(--aston-radius);
+  border: none;
+  background: var(--aston-accent);
+  color: #ffffff;
+  font-family: var(--aston-font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.aston-composer button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.aston-composer button[data-variant="stop"] {
+  background: transparent;
+  color: var(--aston-fg);
+  border: 1px solid var(--aston-border);
+}
+
+.aston-streaming-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--aston-muted);
+}
+.aston-streaming-indicator span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: aston-pulse 1.2s infinite ease-in-out;
+}
+.aston-streaming-indicator span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.aston-streaming-indicator span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes aston-pulse {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1); }
+}
+
+.aston-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  color: var(--aston-muted);
+  font-family: var(--aston-font-sans);
+  padding: 32px;
+  text-align: center;
+}
