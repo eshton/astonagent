@@ -49,4 +49,23 @@ const local = ollama({
 });
 ```
 
+### Ollama web search tool
+
+Ollama's hosted Web Search API is a standalone REST endpoint, not an
+in-completion server search. Expose it to any model as a regular tool:
+
+```ts
+import { ollamaWebSearch } from "@astonagent/providers/ollama";
+
+const tools = [ollamaWebSearch({ apiKey: process.env.OLLAMA_API_KEY })];
+// pass `tools` to runAgent / createChatRoute, or bundle it into a Skill
+```
+
+## Web search
+
+Anthropic and OpenAI run web search **server-side** during a completion — enable
+it with the built-in `webSearchSkill` (or `serverTools: [{ type: "web_search" }]`)
+from `@astonagent/core`. OpenAI needs a search-capable model (e.g.
+`gpt-4o-search-preview`). Ollama instead uses the `ollamaWebSearch` **tool** above.
+
 All providers satisfy `Provider` from `@astonagent/core` and emit the same `StreamEvent` union, so the loop and UI are provider-agnostic. API keys are read lazily — a missing key only errors when that provider is actually used to stream.

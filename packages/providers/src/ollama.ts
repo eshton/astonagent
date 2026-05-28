@@ -1,4 +1,5 @@
-import type { Provider } from "@astonagent/core";
+import { defineTool, type Provider, type ToolDef } from "@astonagent/core";
+import { z } from "zod";
 import { openai } from "./openai.js";
 
 export interface OllamaProviderOptions {
@@ -30,5 +31,61 @@ export function ollama(opts: OllamaProviderOptions): Provider {
     apiKey: opts.apiKey ?? process.env.OLLAMA_API_KEY ?? "ollama",
     baseURL: opts.baseURL ?? CLOUD_BASE_URL,
   });
+  // The provider has no in-completion server-side search; web search is exposed
+  // separately as the ollamaWebSearch tool below.
   return { ...base, id: "ollama", capabilities: { webSearch: false } };
+}
+
+export interface OllamaWebSearchOptions {
+  /** Ollama API key. Defaults to process.env.OLLAMA_API_KEY. */
+  apiKey?: string;
+  /** Max results to return (default 5). */
+  maxResults?: number;
+  /** Override the search endpoint. Defaults to Ollama Cloud. */
+  endpoint?: string;
+}
+
+interface OllamaSearchResult {
+  title: string;
+  url: string;
+  content: string;
+}
+
+const SEARCH_ENDPOINT = "https://ollama.com/api/web_search";
+
+/**
+ * A web-search tool backed by Ollama's hosted Web Search API. Unlike the
+ * provider-native web search of Anthropic/OpenAI, this is a standalone REST
+ * endpoint exposed to the model as a regular (locally-executed) tool, so it
+ * works with any provider's model — it just needs an Ollama API key.
+ */
+export function ollamaWebSearch(opts: OllamaWebSearchOptions = {}): ToolDef {
+  const endpoint = opts.endpoint ?? SEARCH_ENDPOINT;
+  const maxResults = opts.maxResults ?? 5;
+  return defineTool({
+    name: "web_search",
+    description:
+      "Search the web for current information. Returns a list of results with title, url, and a content snippet. Cite the sources you use.",
+    inputSchema: z.object({
+      query: z.string().describe("The search query"),
+    }),
+    execute: async ({ query }: { query: string }, ctx) => {
+      const apiKey = opts.apiKey ?? process.env.OLLAMA_API_KEY;
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
+        },
+        body: JSON.stringify({ query, max_results: maxResults }),
+        signal: ctx.abortSignal,
+      });
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(`Ollama web search failed: ${res.status} ${text}`.trim());
+      }
+      const data = (await res.json()) as { results?: OllamaSearchResult[] };
+      return data.results ?? [];
+    },
+  });
 }

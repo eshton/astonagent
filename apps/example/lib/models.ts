@@ -28,9 +28,9 @@ export const MODELS: ModelDef[] = [
     provider: "openai",
     webSearch: true,
   },
-  { id: "gpt-oss:120b", label: "gpt-oss 120b (Ollama Cloud)", provider: "ollama" },
-  { id: "qwen3-coder:480b", label: "Qwen3 Coder 480b (Ollama Cloud)", provider: "ollama" },
-  { id: "deepseek-v3.1:671b", label: "DeepSeek v3.1 671b (Ollama Cloud)", provider: "ollama" },
+  { id: "gpt-oss:120b", label: "gpt-oss 120b (Ollama Cloud)", provider: "ollama", webSearch: true },
+  { id: "qwen3-coder:480b", label: "Qwen3 Coder 480b (Ollama Cloud)", provider: "ollama", webSearch: true },
+  { id: "deepseek-v3.1:671b", label: "DeepSeek v3.1 671b (Ollama Cloud)", provider: "ollama", webSearch: true },
 ];
 
 export function findModel(id: string | undefined): ModelDef | undefined {

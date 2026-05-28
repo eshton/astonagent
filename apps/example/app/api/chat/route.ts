@@ -13,8 +13,10 @@ const route = createChatRoute({
   // provider — it is never persisted.
   provider: ({ body }) =>
     resolveProvider(body.model as string | undefined, body.apiKey as string | undefined),
-  // Enable the skills the client toggled on (by name).
-  skills: ({ body }) => resolveSkills(body.skills),
+  // Enable the skills the client toggled on (by name). Web search is resolved
+  // per provider — native for Anthropic/OpenAI, Ollama's search tool otherwise.
+  skills: ({ body }) =>
+    resolveSkills(body.skills, body.model as string | undefined, body.apiKey as string | undefined),
   store: drizzleStore(db),
   system: "You are a friendly assistant demoing the astonagent framework. Be concise.",
   tools: [getWeather],
