@@ -4,6 +4,7 @@ import type {
   ContentPart,
   GenerateRequest,
   Provider,
+  ServerTool,
   StopReason,
   StreamEvent,
   ToolDef,
@@ -49,6 +50,10 @@ function partToAnthropic(part: ContentPart): AnthropicBlock | null {
         content: typeof part.output === "string" ? part.output : JSON.stringify(part.output),
         is_error: part.isError,
       };
+    default:
+      // server_tool_use / server_tool_result are not replayed natively; the
+      // assistant's text answer carries the information forward.
+      return null;
   }
 }
 
@@ -100,13 +105,17 @@ function mapStopReason(reason: string | null | undefined): StopReason {
   }
 }
 
-function buildToolParam(tools?: ToolDef[]) {
-  if (!tools || tools.length === 0) return undefined;
-  return tools.map((t) => ({
-    name: t.name,
-    description: t.description,
-    input_schema: toolToJsonSchema(t),
-  }));
+function buildToolParam(tools: ToolDef[] | undefined, serverTools: ServerTool[] | undefined) {
+  const out: Array<Record<string, unknown>> = [];
+  for (const t of tools ?? []) {
+    out.push({ name: t.name, description: t.description, input_schema: toolToJsonSchema(t) });
+  }
+  for (const st of serverTools ?? []) {
+    if (st.type === "web_search") {
+      out.push({ type: "web_search_20250305", name: "web_search", max_uses: st.maxUses ?? 5 });
+    }
+  }
+  return out.length > 0 ? out : undefined;
 }
 
 export function anthropic(opts: AnthropicProviderOptions): Provider {
@@ -127,6 +136,7 @@ export function anthropic(opts: AnthropicProviderOptions): Provider {
   return {
     id: "anthropic",
     modelId,
+    capabilities: { webSearch: true },
     async *stream(req: GenerateRequest): AsyncIterable<StreamEvent> {
       const messages = applyCaching(toAnthropicMessages(req.messages), cacheLastUserTurn);
       const system = req.system
@@ -141,11 +151,14 @@ export function anthropic(opts: AnthropicProviderOptions): Provider {
         temperature: req.temperature,
         system: system as Anthropic.Messages.MessageCreateParams["system"],
         messages: messages as Anthropic.Messages.MessageParam[],
-        tools: buildToolParam(req.tools) as Anthropic.Messages.Tool[] | undefined,
+        tools: buildToolParam(req.tools, req.serverTools) as Anthropic.Messages.Tool[] | undefined,
         stream: true,
       };
 
-      const blockState = new Map<number, { kind: "text" | "tool_use"; id?: string; name?: string; jsonBuf: string }>();
+      const blockState = new Map<
+        number,
+        { kind: "text" | "tool_use" | "server_tool_use"; id?: string; name?: string; jsonBuf: string }
+      >();
       let usage = { promptTokens: 0, completionTokens: 0, cachedTokens: 0 };
       let stopReason: StopReason = "end_turn";
 
@@ -161,7 +174,15 @@ export function anthropic(opts: AnthropicProviderOptions): Provider {
               break;
             }
             case "content_block_start": {
-              const block = event.content_block;
+              // The installed SDK's content-block union may not include server
+              // tool blocks, so read fields off a loosely-typed view.
+              const block = event.content_block as {
+                type: string;
+                id?: string;
+                name?: string;
+                tool_use_id?: string;
+                content?: unknown;
+              };
               if (block.type === "text") {
                 blockState.set(event.index, { kind: "text", jsonBuf: "" });
               } else if (block.type === "tool_use") {
@@ -171,7 +192,21 @@ export function anthropic(opts: AnthropicProviderOptions): Provider {
                   name: block.name,
                   jsonBuf: "",
                 });
-                yield { type: "tool-use-start", id: block.id, name: block.name };
+                yield { type: "tool-use-start", id: block.id!, name: block.name! };
+              } else if (block.type === "server_tool_use") {
+                blockState.set(event.index, {
+                  kind: "server_tool_use",
+                  id: block.id,
+                  name: block.name,
+                  jsonBuf: "",
+                });
+              } else if (block.type === "web_search_tool_result") {
+                yield {
+                  type: "server-tool-result",
+                  id: block.tool_use_id ?? "web_search",
+                  name: "web_search",
+                  result: block.content,
+                };
               }
               break;
             }
@@ -194,7 +229,7 @@ export function anthropic(opts: AnthropicProviderOptions): Provider {
             }
             case "content_block_stop": {
               const s = blockState.get(event.index);
-              if (s && s.kind === "tool_use" && s.id) {
+              if (s && (s.kind === "tool_use" || s.kind === "server_tool_use") && s.id) {
                 let parsed: unknown = {};
                 if (s.jsonBuf.trim()) {
                   try {
@@ -203,7 +238,11 @@ export function anthropic(opts: AnthropicProviderOptions): Provider {
                     parsed = { _raw: s.jsonBuf };
                   }
                 }
-                yield { type: "tool-use-end", id: s.id, input: parsed };
+                if (s.kind === "server_tool_use") {
+                  yield { type: "server-tool-use", id: s.id, name: s.name ?? "web_search", input: parsed };
+                } else {
+                  yield { type: "tool-use-end", id: s.id, input: parsed };
+                }
               }
               blockState.delete(event.index);
               break;

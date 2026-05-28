@@ -504,6 +504,47 @@ body > div {
   padding: 2px 6px;
   border-radius: 6px;
 }
+.chat-header-skills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.skill-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--aston-border);
+  background: var(--surface-2);
+  color: var(--aston-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.skill-toggle:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--aston-accent) 50%, var(--aston-border));
+}
+.skill-toggle:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.skill-toggle[data-on="true"] {
+  background: var(--active-tint);
+  border-color: color-mix(in srgb, var(--aston-accent) 55%, transparent);
+  color: var(--aston-accent);
+}
+.skill-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.4;
+}
+.skill-toggle[data-on="true"] .skill-dot {
+  opacity: 1;
+}
 .model-select {
   display: flex;
   align-items: center;

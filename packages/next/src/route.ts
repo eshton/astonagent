@@ -1,10 +1,13 @@
 import {
+  composeSkills,
   newId,
   runAgent,
   type AgentHooks,
   type AstonMessage,
   type ConversationStore,
   type Provider,
+  type ServerTool,
+  type Skill,
   type StreamEvent,
   type ToolDef,
 } from "@astonagent/core";
@@ -29,11 +32,23 @@ export type ProviderInput =
   | Provider
   | ((ctx: ProviderResolverContext) => Provider | Promise<Provider>);
 
+/**
+ * Skills to enable for the request — a fixed list, or a resolver that picks
+ * them from the request body (e.g. a client-sent `skills` array of names).
+ */
+export type SkillsInput =
+  | Skill[]
+  | ((ctx: ProviderResolverContext) => Skill[] | Promise<Skill[]>);
+
 export interface ChatRouteOptions {
   provider: ProviderInput;
   store: ConversationStore;
   system?: string | ((ctx: { conversationId: string }) => Promise<string> | string);
   tools?: ToolDef[];
+  /** Provider-native tools (e.g. web search) to enable for every request. */
+  serverTools?: ServerTool[];
+  /** Skills to compose into the system prompt and tool set. */
+  skills?: SkillsInput;
   hooks?: AgentHooks;
   maxSteps?: number;
   /**
@@ -121,6 +136,20 @@ export function createChatRoute(opts: ChatRouteOptions): ChatRoute {
       });
     }
 
+    let resolvedSkills: Skill[] = [];
+    try {
+      resolvedSkills =
+        typeof opts.skills === "function"
+          ? await opts.skills({ request: req, body })
+          : opts.skills ?? [];
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to resolve skills";
+      return new Response(JSON.stringify({ error: message }), {
+        status: 400,
+        headers: JSON_HEADERS,
+      });
+    }
+
     // Resolve conversation: either existing or create one.
     let conversationId = body.conversationId;
     if (!conversationId) {
@@ -144,11 +173,19 @@ export function createChatRoute(opts: ChatRouteOptions): ChatRoute {
     }
 
     const conv = await opts.store.getConversation(conversationId);
-    const effectiveSystem =
+    const baseSystem =
       conv?.systemPrompt ??
       (typeof opts.system === "function"
         ? await opts.system({ conversationId })
         : opts.system);
+
+    // Fold any enabled skills into the system prompt, tools, and server tools.
+    const composed = composeSkills({
+      system: baseSystem ?? undefined,
+      tools: opts.tools,
+      serverTools: opts.serverTools,
+      skills: resolvedSkills,
+    });
 
     const userMessage: AstonMessage & { conversationId: string } = {
       id: newId("msg"),
@@ -186,8 +223,9 @@ export function createChatRoute(opts: ChatRouteOptions): ChatRoute {
           conversationId: cid,
           provider,
           messages: history,
-          system: effectiveSystem ?? undefined,
-          tools: opts.tools,
+          system: composed.system,
+          tools: composed.tools,
+          serverTools: composed.serverTools,
           hooks: persistHooks,
           maxSteps: opts.maxSteps,
           temperature: opts.temperature,

@@ -167,6 +167,58 @@
   word-break: break-word;
 }
 
+.aston-server-tool {
+  max-width: 78%;
+  font-size: 13px;
+  color: var(--aston-fg);
+}
+.aston-server-tool[data-kind="use"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: var(--aston-tool-bg);
+  border: 1px solid var(--aston-tool-border);
+  color: var(--aston-muted);
+}
+.aston-server-tool[data-kind="use"] strong {
+  color: var(--aston-fg);
+  font-weight: 600;
+}
+.aston-server-tool-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+.aston-server-tool[data-kind="result"] {
+  border: 1px solid var(--aston-tool-border);
+  background: var(--aston-tool-bg);
+  border-radius: var(--aston-radius-sm);
+  padding: 10px 14px;
+}
+.aston-sources-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  color: var(--aston-muted);
+  margin-bottom: 6px;
+}
+.aston-sources {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.aston-sources a {
+  color: var(--aston-accent);
+  text-decoration: none;
+}
+.aston-sources a:hover {
+  text-decoration: underline;
+}
+
 .aston-composer {
   border-top: 1px solid var(--aston-border);
   padding: 12px;

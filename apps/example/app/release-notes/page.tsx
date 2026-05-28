@@ -21,6 +21,8 @@ const RELEASES: Release[] = [
       "Themeable React chat UI: CSS variables, Tailwind preset, and slot overrides.",
       "Polished demo shell: collapsible sidebar, settings menu, About & release pages.",
       "Settings page for managing API keys (bring-your-own-key, stored in the browser).",
+      "Skills: composable instruction + tool bundles, toggleable per conversation.",
+      "Provider-native web search (Anthropic + OpenAI) with inline sources, shipped as a Web Search skill.",
     ],
   },
 ];

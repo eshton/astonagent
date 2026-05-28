@@ -137,24 +137,32 @@ export function openai(opts: OpenAIProviderOptions): Provider {
   return {
     id: "openai",
     modelId,
+    capabilities: { webSearch: true },
     async *stream(req: GenerateRequest): AsyncIterable<StreamEvent> {
       const messages = toOpenAIMessages(req.messages, req.system);
       const tools = buildTools(req.tools);
+      const wantsWebSearch = (req.serverTools ?? []).some((t) => t.type === "web_search");
       try {
+        const params: Record<string, unknown> = {
+          model: modelId,
+          messages,
+          stream: true,
+          stream_options: { include_usage: true },
+          tools,
+          temperature: req.temperature,
+          max_tokens: req.maxTokens ?? opts.maxTokens,
+        };
+        // OpenAI runs web search server-side via web_search_options on
+        // search-capable models (e.g. gpt-4o-search-preview).
+        if (wantsWebSearch) params.web_search_options = {};
+
         const stream = await getClient().chat.completions.create(
-          {
-            model: modelId,
-            messages,
-            stream: true,
-            stream_options: { include_usage: true },
-            tools,
-            temperature: req.temperature,
-            max_tokens: req.maxTokens ?? opts.maxTokens,
-          },
+          params as unknown as OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming,
           { signal: req.abortSignal },
         );
 
         const toolAccum = new Map<number, ToolCallAccum>();
+        const citations = new Map<string, { url: string; title?: string }>();
         let stopReason: StopReason = "end_turn";
         let usage = { promptTokens: 0, completionTokens: 0, cachedTokens: 0 };
 
@@ -171,6 +179,20 @@ export function openai(opts: OpenAIProviderOptions): Provider {
           const delta = choice.delta;
           if (delta?.content) {
             yield { type: "text-delta", delta: delta.content };
+          }
+          // Web-search citations arrive as annotations on the delta.
+          const annotations = (delta as unknown as {
+            annotations?: Array<{ type: string; url_citation?: { url: string; title?: string } }>;
+          }).annotations;
+          if (annotations) {
+            for (const a of annotations) {
+              if (a.type === "url_citation" && a.url_citation?.url) {
+                citations.set(a.url_citation.url, {
+                  url: a.url_citation.url,
+                  title: a.url_citation.title,
+                });
+              }
+            }
           }
           if (delta?.tool_calls) {
             for (const tc of delta.tool_calls) {
@@ -220,6 +242,19 @@ export function openai(opts: OpenAIProviderOptions): Provider {
             }
           }
           yield { type: "tool-use-end", id: acc.id, input: parsed };
+        }
+
+        // Surface web-search citations as a server-tool result so the UI can
+        // show sources, mirroring the Anthropic shape.
+        if (citations.size > 0) {
+          const id = "web_search_openai";
+          yield { type: "server-tool-use", id, name: "web_search", input: {} };
+          yield {
+            type: "server-tool-result",
+            id,
+            name: "web_search",
+            result: [...citations.values()].map((c) => ({ url: c.url, title: c.title })),
+          };
         }
 
         yield { type: "message-stop", usage, stopReason };

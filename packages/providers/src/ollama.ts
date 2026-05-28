@@ -30,5 +30,5 @@ export function ollama(opts: OllamaProviderOptions): Provider {
     apiKey: opts.apiKey ?? process.env.OLLAMA_API_KEY ?? "ollama",
     baseURL: opts.baseURL ?? CLOUD_BASE_URL,
   });
-  return { ...base, id: "ollama" };
+  return { ...base, id: "ollama", capabilities: { webSearch: false } };
 }

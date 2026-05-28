@@ -3,6 +3,7 @@ import type { Provider, ToolDef } from "./provider.js";
 import type {
   AstonMessage,
   ContentPart,
+  ServerTool,
   StopReason,
   StreamEvent,
   TokenUsage,
@@ -32,6 +33,7 @@ export interface RunOptions {
   messages: AstonMessage[];
   system?: string;
   tools?: ToolDef[];
+  serverTools?: ServerTool[];
   maxSteps?: number;
   hooks?: AgentHooks;
   abortSignal?: AbortSignal;
@@ -69,6 +71,7 @@ export async function* runAgent(opts: RunOptions): AsyncIterable<StreamEvent> {
         messages: workingMessages,
         system: opts.system,
         tools: opts.tools,
+        serverTools: opts.serverTools,
         temperature: opts.temperature,
         maxTokens: opts.maxTokens,
         abortSignal: opts.abortSignal,
@@ -104,6 +107,26 @@ export async function* runAgent(opts: RunOptions): AsyncIterable<StreamEvent> {
             await hooks.onToolCall?.(toolUse, ctx);
             break;
           }
+          case "server-tool-use":
+            if (pendingText) {
+              assistantMsg.content.push({ type: "text", text: pendingText });
+              pendingText = "";
+            }
+            assistantMsg.content.push({
+              type: "server_tool_use",
+              id: ev.id,
+              name: ev.name,
+              input: ev.input,
+            });
+            break;
+          case "server-tool-result":
+            assistantMsg.content.push({
+              type: "server_tool_result",
+              id: ev.id,
+              name: ev.name,
+              result: ev.result,
+            });
+            break;
           case "message-stop":
             totalUsage.promptTokens += ev.usage.promptTokens;
             totalUsage.completionTokens += ev.usage.completionTokens;

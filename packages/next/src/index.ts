@@ -6,6 +6,7 @@ export type {
   ChatRouteAuthContext,
   ProviderInput,
   ProviderResolverContext,
+  SkillsInput,
 } from "./route.js";
 
 export { sseEncodeEvent, sseHeartbeat, sseStream, sseDecode } from "./sse.js";

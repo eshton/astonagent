@@ -3,6 +3,7 @@ import { drizzleStore } from "@astonagent/db";
 import { db } from "@/lib/db";
 import { getWeather } from "@/lib/tools";
 import { resolveProvider } from "@/lib/resolve-provider";
+import { resolveSkills } from "@/lib/resolve-skills";
 
 export const runtime = "nodejs";
 
@@ -12,6 +13,8 @@ const route = createChatRoute({
   // provider — it is never persisted.
   provider: ({ body }) =>
     resolveProvider(body.model as string | undefined, body.apiKey as string | undefined),
+  // Enable the skills the client toggled on (by name).
+  skills: ({ body }) => resolveSkills(body.skills),
   store: drizzleStore(db),
   system: "You are a friendly assistant demoing the astonagent framework. Be concise.",
   tools: [getWeather],

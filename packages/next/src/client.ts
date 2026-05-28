@@ -186,6 +186,30 @@ export function useAstonChat(options: UseAstonChatOptions = {}): UseAstonChatRes
               }));
               break;
             }
+            case "server-tool-use": {
+              if (!activeAssistantId) break;
+              const id = activeAssistantId;
+              update(id, (msg) => ({
+                ...msg,
+                content: [
+                  ...msg.content,
+                  { type: "server_tool_use", id: ev.id, name: ev.name, input: ev.input },
+                ],
+              }));
+              break;
+            }
+            case "server-tool-result": {
+              if (!activeAssistantId) break;
+              const id = activeAssistantId;
+              update(id, (msg) => ({
+                ...msg,
+                content: [
+                  ...msg.content,
+                  { type: "server_tool_result", id: ev.id, name: ev.name, result: ev.result },
+                ],
+              }));
+              break;
+            }
             case "message-stop":
               activeAssistantId = null;
               break;

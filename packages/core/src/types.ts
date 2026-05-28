@@ -25,7 +25,32 @@ export interface ToolResultPart {
   isError?: boolean;
 }
 
-export type ContentPart = TextPart | ImagePart | ToolUsePart | ToolResultPart;
+/** A tool the provider runs server-side (e.g. native web search). */
+export interface ServerToolUsePart {
+  type: "server_tool_use";
+  id: string;
+  name: string;
+  input: unknown;
+}
+
+/** The result of a server-side tool, returned inline by the provider. */
+export interface ServerToolResultPart {
+  type: "server_tool_result";
+  id: string;
+  name: string;
+  result: unknown;
+}
+
+export type ContentPart =
+  | TextPart
+  | ImagePart
+  | ToolUsePart
+  | ToolResultPart
+  | ServerToolUsePart
+  | ServerToolResultPart;
+
+/** A provider-native tool that runs on the provider's servers. */
+export type ServerTool = { type: "web_search"; maxUses?: number };
 
 export interface AstonMessage {
   id: string;
@@ -49,5 +74,7 @@ export type StreamEvent =
   | { type: "tool-use-start"; id: string; name: string }
   | { type: "tool-use-input-delta"; id: string; delta: string }
   | { type: "tool-use-end"; id: string; input: unknown }
+  | { type: "server-tool-use"; id: string; name: string; input: unknown }
+  | { type: "server-tool-result"; id: string; name: string; result: unknown }
   | { type: "message-stop"; usage: TokenUsage; stopReason: StopReason }
   | { type: "error"; error: { message: string; name?: string } };

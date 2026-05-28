@@ -16,6 +16,8 @@ export {
   ToolMessage,
   ToolCallCard,
   ToolResultCard,
+  ServerToolUseCard,
+  ServerToolResultCard,
   StreamingIndicator,
 } from "./components.js";
 

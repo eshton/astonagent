@@ -1,7 +1,13 @@
 import type { ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import type { AstonMessage, ToolResultPart, ToolUsePart } from "@astonagent/core";
+import type {
+  AstonMessage,
+  ServerToolResultPart,
+  ServerToolUsePart,
+  ToolResultPart,
+  ToolUsePart,
+} from "@astonagent/core";
 
 export interface UserBubbleProps {
   message: AstonMessage;
@@ -36,6 +42,10 @@ export function AssistantBubble({ message }: AssistantBubbleProps) {
       );
     } else if (p.type === "tool_use") {
       blocks.push(<ToolCallCard key={`tc${i}`} call={p} />);
+    } else if (p.type === "server_tool_use") {
+      blocks.push(<ServerToolUseCard key={`stu${i}`} call={p} />);
+    } else if (p.type === "server_tool_result") {
+      blocks.push(<ServerToolResultCard key={`str${i}`} result={p} />);
     }
   }
   if (blocks.length === 0) {
@@ -101,6 +111,77 @@ export function ToolResultCard({ result }: ToolResultCardProps) {
         ← result{result.isError ? " (error)" : ""}
       </div>
       <pre>{text}</pre>
+    </div>
+  );
+}
+
+export interface ServerToolUseCardProps {
+  call: ServerToolUsePart;
+}
+
+export function ServerToolUseCard({ call }: ServerToolUseCardProps) {
+  const query =
+    call.input && typeof call.input === "object" && "query" in call.input
+      ? String((call.input as { query: unknown }).query)
+      : undefined;
+  const label = call.name === "web_search" ? "Searching the web" : call.name;
+  return (
+    <div className="aston-server-tool" data-kind="use">
+      <span className="aston-server-tool-icon" aria-hidden="true">
+        ⌕
+      </span>
+      <span>
+        {label}
+        {query ? (
+          <>
+            : <strong>{query}</strong>
+          </>
+        ) : null}
+      </span>
+    </div>
+  );
+}
+
+interface SourceLink {
+  url: string;
+  title?: string;
+}
+
+function extractSources(result: unknown): SourceLink[] {
+  if (!Array.isArray(result)) return [];
+  const out: SourceLink[] = [];
+  for (const item of result) {
+    if (item && typeof item === "object" && "url" in item) {
+      const url = String((item as { url: unknown }).url);
+      const title =
+        "title" in item && (item as { title?: unknown }).title
+          ? String((item as { title: unknown }).title)
+          : undefined;
+      out.push({ url, title });
+    }
+  }
+  return out;
+}
+
+export interface ServerToolResultCardProps {
+  result: ServerToolResultPart;
+}
+
+export function ServerToolResultCard({ result }: ServerToolResultCardProps) {
+  const sources = extractSources(result.result);
+  if (sources.length === 0) return null;
+  return (
+    <div className="aston-server-tool" data-kind="result">
+      <div className="aston-sources-title">Sources</div>
+      <ol className="aston-sources">
+        {sources.map((s, i) => (
+          <li key={i}>
+            <a href={s.url} target="_blank" rel="noreferrer">
+              {s.title || s.url}
+            </a>
+          </li>
+        ))}
+      </ol>
     </div>
   );
 }

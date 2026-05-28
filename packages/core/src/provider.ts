@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type { AstonMessage, StreamEvent } from "./types.js";
+import type { AstonMessage, ServerTool, StreamEvent } from "./types.js";
 
 export interface ToolContext {
   conversationId: string;
@@ -19,14 +19,22 @@ export interface GenerateRequest {
   messages: AstonMessage[];
   system?: string;
   tools?: ToolDef[];
+  /** Provider-native tools (e.g. web search) the provider runs server-side. */
+  serverTools?: ServerTool[];
   temperature?: number;
   maxTokens?: number;
   abortSignal?: AbortSignal;
 }
 
+export interface ProviderCapabilities {
+  /** Provider can perform native server-side web search. */
+  webSearch?: boolean;
+}
+
 export interface Provider {
   readonly id: string;
   readonly modelId: string;
+  readonly capabilities?: ProviderCapabilities;
   stream(req: GenerateRequest): AsyncIterable<StreamEvent>;
 }
 
