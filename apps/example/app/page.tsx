@@ -39,9 +39,10 @@ export default function HomePage() {
 
         <h2>Get started</h2>
         <p>
-          Click <strong>New chat</strong> in the sidebar to begin. Set <code>ANTHROPIC_API_KEY</code>,{" "}
-          <code>OPENAI_API_KEY</code>, or <code>OLLAMA_API_KEY</code> in <code>.env.local</code> to
-          talk to the real providers.
+          Add an API key on the <a href="/settings">Settings</a> page (stored in your browser), or
+          set <code>ANTHROPIC_API_KEY</code>, <code>OPENAI_API_KEY</code>, or{" "}
+          <code>OLLAMA_API_KEY</code> in <code>.env.local</code>. Then click{" "}
+          <strong>New chat</strong> in the sidebar to begin.
         </p>
         <div className="chip-row">
           <span className="chip">Anthropic Claude</span>

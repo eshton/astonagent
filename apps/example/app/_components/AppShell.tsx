@@ -10,6 +10,7 @@ import {
   ChatIcon,
   HomeIcon,
   InfoIcon,
+  KeyIcon,
   NotesIcon,
   PanelIcon,
   PlusIcon,
@@ -23,6 +24,7 @@ interface Conversation {
 
 const NAV = [
   { href: "/", label: "Home", icon: HomeIcon },
+  { href: "/settings", label: "Settings", icon: KeyIcon },
   { href: "/about", label: "About", icon: InfoIcon },
   { href: "/release-notes", label: "Release notes", icon: NotesIcon },
 ];

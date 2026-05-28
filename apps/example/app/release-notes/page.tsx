@@ -20,6 +20,7 @@ const RELEASES: Release[] = [
       "Drizzle-backed persistence (SQLite + Postgres) with conversation history.",
       "Themeable React chat UI: CSS variables, Tailwind preset, and slot overrides.",
       "Polished demo shell: collapsible sidebar, settings menu, About & release pages.",
+      "Settings page for managing API keys (bring-your-own-key, stored in the browser).",
     ],
   },
 ];

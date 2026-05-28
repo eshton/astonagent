@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { GearIcon, CheckIcon } from "./Icons";
+import Link from "next/link";
+import { GearIcon, CheckIcon, KeyIcon } from "./Icons";
 
 export interface ThemeOption {
   id: string;
@@ -82,6 +83,11 @@ export function SettingsMenu({
               </button>
             ))}
           </div>
+          <div className="popover-divider" />
+          <Link href="/settings" className="popover-link" onClick={() => setOpen(false)}>
+            <KeyIcon width={16} height={16} />
+            <span>Manage API keys</span>
+          </Link>
         </div>
       )}
     </div>
