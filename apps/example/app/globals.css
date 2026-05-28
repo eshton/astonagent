@@ -12,6 +12,8 @@ body {
   background: var(--aston-bg);
   color: var(--aston-fg);
   font-family: var(--aston-font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 #__next,
@@ -19,8 +21,9 @@ body > div {
   height: 100%;
 }
 
-/* Themes — defined here so the example app can demonstrate swapping without
-   requiring users to write CSS. Real apps would put these in their own files. */
+/* ───────────────────────── Themes ─────────────────────────
+   Defined here so the example can demo swapping without making users write
+   CSS. Real apps would ship these in their own files. */
 
 [data-aston-theme="claude-classic"] {
   --aston-bg: #f5f1ea;
@@ -82,89 +85,585 @@ body > div {
   --aston-font-sans: var(--aston-font-mono);
 }
 
+/* ──────────────── Chrome design tokens (derived per theme) ──────────────── */
+
 .app-shell {
-  display: grid;
-  grid-template-columns: 260px 1fr;
+  /* Elevated/translucent surfaces computed from the active theme. */
+  --surface: color-mix(in srgb, var(--aston-fg) 4%, var(--aston-bg));
+  --surface-2: color-mix(in srgb, var(--aston-fg) 8%, var(--aston-bg));
+  --hover: color-mix(in srgb, var(--aston-fg) 7%, transparent);
+  --active-tint: color-mix(in srgb, var(--aston-accent) 14%, transparent);
+  --glass: color-mix(in srgb, var(--aston-bg) 78%, transparent);
+  --ring: color-mix(in srgb, var(--aston-accent) 35%, transparent);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08);
+  --sidebar-w: 280px;
+
+  display: flex;
   height: 100vh;
+  overflow: hidden;
+  background: var(--aston-bg);
+  position: relative;
 }
+
+/* Subtle accent glow in the corner for depth */
+.app-shell::before {
+  content: "";
+  position: absolute;
+  top: -160px;
+  right: -120px;
+  width: 480px;
+  height: 480px;
+  background: radial-gradient(closest-side, var(--aston-accent), transparent);
+  opacity: 0.07;
+  pointer-events: none;
+  filter: blur(12px);
+}
+
+/* ───────────────────────── Sidebar ───────────────────────── */
 
 .sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
   border-right: 1px solid var(--aston-border);
-  padding: 16px;
-  overflow-y: auto;
+  background: var(--surface);
+  padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  background: var(--aston-bg);
+  gap: 6px;
+  overflow: hidden;
+  transition:
+    width 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    padding 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.2s ease;
 }
 
-.sidebar h1 {
-  margin: 0;
-  font-size: 16px;
+.app-shell[data-collapsed="true"] .sidebar {
+  width: 0;
+  padding-left: 0;
+  padding-right: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.new-chat {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 14px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  color: #fff;
+  font-size: 14px;
   font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px color-mix(in srgb, #8b5cf6 45%, transparent);
+  transition: transform 0.12s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+.new-chat:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 6px 20px color-mix(in srgb, #8b5cf6 55%, transparent);
+}
+.new-chat:active {
+  transform: translateY(0);
 }
 
-.sidebar a {
-  display: block;
-  padding: 8px 10px;
-  border-radius: 8px;
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 10px;
+}
+.nav a,
+.conversation-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 11px;
+  border-radius: 10px;
   text-decoration: none;
   color: var(--aston-fg);
   font-size: 14px;
+  white-space: nowrap;
+  position: relative;
+  transition: background 0.15s ease, color 0.15s ease;
 }
-.sidebar a:hover {
-  background: var(--aston-border);
+.nav a svg,
+.conversation-link svg {
+  color: var(--aston-muted);
+  flex-shrink: 0;
+  transition: color 0.15s ease;
 }
-.sidebar a[data-active="true"] {
-  background: var(--aston-border);
-  font-weight: 500;
+.nav a:hover,
+.conversation-link:hover {
+  background: var(--hover);
+}
+.nav a[data-active="true"],
+.conversation-link[data-active="true"] {
+  background: var(--active-tint);
+  color: var(--aston-accent);
+  font-weight: 600;
+}
+.nav a[data-active="true"] svg,
+.conversation-link[data-active="true"] svg {
+  color: var(--aston-accent);
 }
 
 .sidebar-section {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--aston-muted);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin-top: 8px;
+  letter-spacing: 0.07em;
+  font-weight: 600;
+  margin: 16px 6px 6px;
+  white-space: nowrap;
 }
 
-.sidebar button {
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--aston-border);
-  background: transparent;
-  color: var(--aston-fg);
-  cursor: pointer;
-  font-size: 14px;
-  text-align: left;
+.conversation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  margin: 0 -4px;
+  padding: 0 4px;
 }
-.sidebar button:hover {
-  background: var(--aston-border);
+.conversation-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.muted-note {
+  font-size: 13px;
+  color: var(--aston-muted);
+  padding: 6px 11px;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--aston-border);
+}
+.sidebar-footer a {
+  font-size: 12px;
+  color: var(--aston-muted);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.sidebar-footer a:hover {
+  color: var(--aston-accent);
+}
+
+/* ───────────────────────── Main column ───────────────────────── */
+
+.main-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
 }
 
 .topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 16px;
-  border-bottom: 1px solid var(--aston-border);
   gap: 12px;
+  height: 58px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--aston-border);
+  background: var(--glass);
+  backdrop-filter: saturate(1.4) blur(12px);
+  -webkit-backdrop-filter: saturate(1.4) blur(12px);
+  z-index: 10;
 }
-.topbar-title {
-  font-weight: 600;
-}
-.topbar select {
-  padding: 6px 10px;
-  border-radius: 8px;
-  border: 1px solid var(--aston-border);
-  background: var(--aston-bg);
-  color: var(--aston-fg);
-  font-size: 13px;
+.topbar-left,
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.chat-wrap {
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--aston-fg);
+}
+.brand-name {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.brand-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--aston-muted);
+  border: 1px solid var(--aston-border);
+  border-radius: 999px;
+  padding: 2px 7px;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--aston-fg);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.icon-btn:hover {
+  background: var(--hover);
+  border-color: var(--aston-border);
+}
+
+.signin-btn {
+  padding: 7px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--aston-border);
+  background: var(--surface-2);
+  color: var(--aston-fg);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+.signin-btn:hover {
+  background: var(--hover);
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  user-select: none;
+}
+
+/* ───────────────────────── Settings popover ───────────────────────── */
+
+.settings {
+  position: relative;
+}
+.popover {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 240px;
+  background: var(--surface);
+  border: 1px solid var(--aston-border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-lg);
+  padding: 10px;
+  z-index: 50;
+  animation: pop-in 0.14s ease;
+}
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.popover-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--aston-muted);
+  padding: 4px 8px 8px;
+}
+.theme-grid {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  gap: 2px;
+}
+.theme-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--aston-fg);
+  font-size: 14px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.13s ease;
+}
+.theme-option:hover {
+  background: var(--hover);
+}
+.theme-option[data-active="true"] {
+  background: var(--active-tint);
+  color: var(--aston-accent);
+  font-weight: 600;
+}
+.theme-label {
+  flex: 1;
+}
+.theme-swatch {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.theme-swatch span {
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+/* ───────────────────────── Content + pages ───────────────────────── */
+
+.content {
+  flex: 1;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Chat fills the remaining space alongside the chat header. */
+.content .aston-chat {
+  height: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--aston-border);
+  background: var(--surface);
+}
+.chat-header-id {
+  font-size: 13px;
+  color: var(--aston-muted);
+}
+.chat-header-id code {
+  font-family: var(--aston-font-mono);
+  background: var(--surface-2);
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+.model-select {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--aston-muted);
+}
+.model-select select {
+  padding: 7px 11px;
+  border-radius: 10px;
+  border: 1px solid var(--aston-border);
+  background: var(--surface-2);
+  color: var(--aston-fg);
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
+}
+.model-select select:focus-visible {
+  border-color: var(--aston-accent);
+  box-shadow: 0 0 0 3px var(--ring);
+}
+
+/* Generic page scaffold for Home / About / Release notes */
+.page {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 48px 32px;
+}
+.page-inner {
+  max-width: 760px;
+  margin: 0 auto;
+}
+.page h1 {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px;
+}
+.page .lead {
+  font-size: 17px;
+  color: var(--aston-muted);
+  margin: 0 0 28px;
+  line-height: 1.6;
+}
+.page h2 {
+  font-size: 15px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--aston-muted);
+  margin: 32px 0 12px;
+}
+.page p {
+  line-height: 1.7;
+  margin: 0 0 14px;
+}
+.page a {
+  color: var(--aston-accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+.page a:hover {
+  text-decoration: underline;
+}
+.page code {
+  font-family: var(--aston-font-mono);
+  font-size: 0.9em;
+  background: var(--surface-2);
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.hero-logo {
+  margin-bottom: 20px;
+  filter: drop-shadow(0 8px 20px color-mix(in srgb, #8b5cf6 40%, transparent));
+  width: fit-content;
+  border-radius: 18px;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin: 8px 0 16px;
+}
+.card {
+  border: 1px solid var(--aston-border);
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 18px;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: color-mix(in srgb, var(--aston-accent) 40%, var(--aston-border));
+}
+.card h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.card p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--aston-muted);
+  line-height: 1.55;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  color: #fff !important;
+  font-weight: 600;
+  text-decoration: none !important;
+  box-shadow: 0 4px 14px color-mix(in srgb, #8b5cf6 45%, transparent);
+  transition: transform 0.12s ease, filter 0.2s ease;
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 8px;
+}
+.chip {
+  font-size: 13px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--aston-border);
+  background: var(--surface-2);
+  color: var(--aston-fg);
+}
+
+/* Release notes timeline */
+.release {
+  border-left: 2px solid var(--aston-border);
+  padding-left: 22px;
+  margin-left: 6px;
+  position: relative;
+  padding-bottom: 28px;
+}
+.release::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  top: 4px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  box-shadow: 0 0 0 4px var(--aston-bg);
+}
+.release-version {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.release-version h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+.release-date {
+  font-size: 13px;
+  color: var(--aston-muted);
+}
+.release ul {
+  margin: 0;
+  padding-left: 18px;
+  line-height: 1.7;
+}
+.release ul li {
+  margin-bottom: 4px;
 }

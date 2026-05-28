@@ -14,3 +14,5 @@ coverage
 *.sqlite-shm
 *.sqlite-wal
 .vercel
+.idea
+.vscode

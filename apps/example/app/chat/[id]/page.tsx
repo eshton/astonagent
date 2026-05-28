@@ -24,16 +24,14 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
 
   return (
     <>
-      <div className="topbar" style={{ borderTop: "1px solid var(--aston-border)" }}>
-        <div style={{ fontSize: 13, color: "var(--aston-muted)" }}>
-          Conversation <code>{id.slice(0, 16)}</code>
+      <div className="chat-header">
+        <div className="chat-header-id">
+          Conversation <code>{id.slice(5, 17)}</code>
         </div>
-        <label style={{ fontSize: 13, color: "var(--aston-muted)" }}>
-          Model:{" "}
+        <label className="model-select">
+          <span>Model</span>
           {models.length === 0 ? (
-            <span style={{ color: "var(--aston-muted)" }}>
-              none available — set an API key
-            </span>
+            <span className="muted-note">none available — set an API key</span>
           ) : (
             <select value={model} onChange={(e) => setModel(e.target.value)}>
               {models.map((m) => (
@@ -45,12 +43,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
           )}
         </label>
       </div>
-      <Chat
-        key={id}
-        conversationId={id}
-        endpoint="/api/chat"
-        body={{ model }}
-      />
+      <Chat key={id} conversationId={id} endpoint="/api/chat" body={{ model }} />
     </>
   );
 }
