@@ -11,6 +11,7 @@ export { Composer } from "./Composer.js";
 export type { ComposerProps } from "./Composer.js";
 
 export {
+  Markdown,
   UserBubble,
   AssistantBubble,
   ToolMessage,

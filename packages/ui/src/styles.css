@@ -137,6 +137,130 @@
   margin: 8px 0;
   white-space: pre;
 }
+.aston-bubble pre code {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+}
+
+/* Markdown content — keep first/last elements flush with the bubble padding */
+.aston-bubble > :first-child {
+  margin-top: 0;
+}
+.aston-bubble > :last-child {
+  margin-bottom: 0;
+}
+
+.aston-bubble h1,
+.aston-bubble h2,
+.aston-bubble h3,
+.aston-bubble h4 {
+  margin: 16px 0 8px;
+  line-height: 1.25;
+  font-weight: 700;
+}
+.aston-bubble h1 {
+  font-size: 1.45em;
+}
+.aston-bubble h2 {
+  font-size: 1.25em;
+}
+.aston-bubble h3 {
+  font-size: 1.1em;
+}
+.aston-bubble h4 {
+  font-size: 1em;
+}
+
+.aston-bubble a {
+  color: var(--aston-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  word-break: break-word;
+}
+.aston-bubble[data-role="user"] a {
+  color: inherit;
+}
+.aston-bubble a:hover {
+  text-decoration: none;
+}
+
+.aston-bubble ul,
+.aston-bubble ol {
+  margin: 8px 0;
+  padding-left: 22px;
+}
+.aston-bubble li {
+  margin: 3px 0;
+}
+.aston-bubble li > ul,
+.aston-bubble li > ol {
+  margin: 3px 0;
+}
+.aston-bubble li::marker {
+  color: var(--aston-muted);
+}
+.aston-bubble input[type="checkbox"] {
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.aston-bubble ul:has(> li > input[type="checkbox"]) {
+  list-style: none;
+  padding-left: 4px;
+}
+
+.aston-bubble blockquote {
+  margin: 8px 0;
+  padding: 2px 14px;
+  border-left: 3px solid var(--aston-border);
+  color: var(--aston-muted);
+}
+
+.aston-bubble hr {
+  border: none;
+  border-top: 1px solid var(--aston-border);
+  margin: 16px 0;
+}
+
+.aston-bubble strong {
+  font-weight: 700;
+}
+.aston-bubble img {
+  max-width: 100%;
+  border-radius: var(--aston-radius-sm);
+}
+
+/* Tables (GFM) */
+.aston-table-wrap {
+  overflow-x: auto;
+  margin: 10px 0;
+  border: 1px solid var(--aston-border);
+  border-radius: var(--aston-radius-sm);
+}
+.aston-bubble table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.92em;
+}
+.aston-bubble th,
+.aston-bubble td {
+  padding: 7px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--aston-border);
+  border-right: 1px solid var(--aston-border);
+}
+.aston-bubble th:last-child,
+.aston-bubble td:last-child {
+  border-right: none;
+}
+.aston-bubble tbody tr:last-child td {
+  border-bottom: none;
+}
+.aston-bubble thead th {
+  background: var(--aston-tool-bg);
+  font-weight: 600;
+}
 
 .aston-tool-card {
   border: 1px solid var(--aston-tool-border);

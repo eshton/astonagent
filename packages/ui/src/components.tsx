@@ -1,5 +1,5 @@
-import type { ReactNode } from "react";
-import ReactMarkdown from "react-markdown";
+import type { ComponentPropsWithoutRef, ReactNode } from "react";
+import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type {
   AstonMessage,
@@ -8,6 +8,31 @@ import type {
   ToolResultPart,
   ToolUsePart,
 } from "@astonagent/core";
+
+/**
+ * Markdown element overrides: links open safely in a new tab and tables get a
+ * horizontally-scrollable wrapper so wide tables don't break the bubble layout.
+ */
+const markdownComponents: Components = {
+  a: ({ children, ...props }: ComponentPropsWithoutRef<"a">) => (
+    <a {...props} target="_blank" rel="noreferrer noopener">
+      {children}
+    </a>
+  ),
+  table: ({ children }: ComponentPropsWithoutRef<"table">) => (
+    <div className="aston-table-wrap">
+      <table>{children}</table>
+    </div>
+  ),
+};
+
+export function Markdown({ children }: { children: string }) {
+  return (
+    <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+      {children}
+    </ReactMarkdown>
+  );
+}
 
 export interface UserBubbleProps {
   message: AstonMessage;
@@ -37,7 +62,7 @@ export function AssistantBubble({ message }: AssistantBubbleProps) {
     if (p.type === "text") {
       blocks.push(
         <div key={`t${i}`} className="aston-bubble" data-role="assistant">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{p.text}</ReactMarkdown>
+          <Markdown>{p.text}</Markdown>
         </div>,
       );
     } else if (p.type === "tool_use") {
