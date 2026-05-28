@@ -28,4 +28,25 @@ const provider = openai({
 });
 ```
 
-Both providers satisfy `Provider` from `@astonagent/core` and emit the same `StreamEvent` union, so the loop and UI are provider-agnostic.
+## Ollama (cloud or local)
+
+Ollama exposes an OpenAI-compatible endpoint, so this adapter delegates to the
+OpenAI one with Ollama's base URL and key.
+
+```ts
+import { ollama } from "@astonagent/providers/ollama";
+
+// Cloud (default base URL https://ollama.com/v1)
+const cloud = ollama({
+  model: "gpt-oss:120b",
+  apiKey: process.env.OLLAMA_API_KEY,
+});
+
+// Local daemon
+const local = ollama({
+  model: "llama3.2",
+  baseURL: "http://localhost:11434/v1",
+});
+```
+
+All providers satisfy `Provider` from `@astonagent/core` and emit the same `StreamEvent` union, so the loop and UI are provider-agnostic. API keys are read lazily — a missing key only errors when that provider is actually used to stream.

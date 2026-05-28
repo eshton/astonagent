@@ -4,12 +4,17 @@
 import type { Provider } from "@astonagent/core";
 import { anthropic } from "@astonagent/providers/anthropic";
 import { openai } from "@astonagent/providers/openai";
+import { ollama } from "@astonagent/providers/ollama";
 import { MODELS, findModel, type ModelDef, type ProviderId } from "./models";
 
+const ENV_VAR: Record<ProviderId, string> = {
+  anthropic: "ANTHROPIC_API_KEY",
+  openai: "OPENAI_API_KEY",
+  ollama: "OLLAMA_API_KEY",
+};
+
 export function providerKeyPresent(provider: ProviderId): boolean {
-  return provider === "anthropic"
-    ? Boolean(process.env.ANTHROPIC_API_KEY)
-    : Boolean(process.env.OPENAI_API_KEY);
+  return Boolean(process.env[ENV_VAR[provider]]);
 }
 
 export function availableModels(): ModelDef[] {
@@ -20,10 +25,14 @@ export function resolveProvider(modelId: string | undefined): Provider {
   const model = findModel(modelId) ?? availableModels()[0] ?? MODELS[0];
   if (!model) throw new Error("No models configured");
   if (!providerKeyPresent(model.provider)) {
-    const envVar = model.provider === "anthropic" ? "ANTHROPIC_API_KEY" : "OPENAI_API_KEY";
-    throw new Error(`Missing ${envVar} — cannot use model "${model.id}".`);
+    throw new Error(`Missing ${ENV_VAR[model.provider]} — cannot use model "${model.id}".`);
   }
-  return model.provider === "anthropic"
-    ? anthropic({ model: model.id })
-    : openai({ model: model.id });
+  switch (model.provider) {
+    case "anthropic":
+      return anthropic({ model: model.id });
+    case "openai":
+      return openai({ model: model.id });
+    case "ollama":
+      return ollama({ model: model.id });
+  }
 }

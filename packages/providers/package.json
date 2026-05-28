@@ -22,6 +22,11 @@
       "types": "./dist/openai.d.ts",
       "import": "./dist/openai.js",
       "require": "./dist/openai.cjs"
+    },
+    "./ollama": {
+      "types": "./dist/ollama.d.ts",
+      "import": "./dist/ollama.js",
+      "require": "./dist/ollama.cjs"
     }
   },
   "files": ["dist", "README.md", "LICENSE"],

@@ -1,7 +1,7 @@
 import { defineConfig } from "tsup";
 
 export default defineConfig({
-  entry: ["src/index.ts", "src/anthropic.ts", "src/openai.ts"],
+  entry: ["src/index.ts", "src/anthropic.ts", "src/openai.ts", "src/ollama.ts"],
   format: ["esm", "cjs"],
   dts: true,
   sourcemap: true,

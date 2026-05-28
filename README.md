@@ -5,7 +5,7 @@
 Stop rebuilding the same agent plumbing for every new client. `astonagent` ships:
 
 - A streaming **agent loop** with tool-calling and hookable side effects
-- First-class **Anthropic Claude** + **OpenAI** providers behind one stable interface
+- First-class **Anthropic Claude**, **OpenAI**, and **Ollama** (cloud or local) providers behind one stable interface
 - **Persistence** via Drizzle ORM (SQLite for dev, Postgres for prod) — bring your own database
 - A polished **React chat UI** that themes via CSS variables and a Tailwind preset
 - A **Next.js** route-handler factory and `useAstonChat` hook that wire everything together

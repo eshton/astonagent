@@ -1,6 +1,6 @@
 // Client-safe model registry — pure data, no SDK imports or env access.
 
-export type ProviderId = "anthropic" | "openai";
+export type ProviderId = "anthropic" | "openai" | "ollama";
 
 export interface ModelDef {
   id: string;
@@ -14,6 +14,9 @@ export const MODELS: ModelDef[] = [
   { id: "claude-haiku-4-5", label: "Claude Haiku 4.5", provider: "anthropic" },
   { id: "gpt-4o", label: "GPT-4o", provider: "openai" },
   { id: "gpt-4o-mini", label: "GPT-4o mini", provider: "openai" },
+  { id: "gpt-oss:120b", label: "gpt-oss 120b (Ollama Cloud)", provider: "ollama" },
+  { id: "qwen3-coder:480b", label: "Qwen3 Coder 480b (Ollama Cloud)", provider: "ollama" },
+  { id: "deepseek-v3.1:671b", label: "DeepSeek v3.1 671b (Ollama Cloud)", provider: "ollama" },
 ];
 
 export function findModel(id: string | undefined): ModelDef | undefined {
