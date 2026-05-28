@@ -120,12 +120,18 @@ interface ToolCallAccum {
 }
 
 export function openai(opts: OpenAIProviderOptions): Provider {
-  const client =
-    opts.client ??
-    new OpenAI({
-      apiKey: opts.apiKey ?? process.env.OPENAI_API_KEY,
-      baseURL: opts.baseURL,
-    });
+  // Construct the SDK client lazily so a missing API key only errors when this
+  // provider is actually used to stream — not at import time.
+  let client: OpenAI | undefined = opts.client;
+  const getClient = (): OpenAI => {
+    if (!client) {
+      client = new OpenAI({
+        apiKey: opts.apiKey ?? process.env.OPENAI_API_KEY,
+        baseURL: opts.baseURL,
+      });
+    }
+    return client;
+  };
   const modelId = opts.model;
 
   return {
@@ -135,7 +141,7 @@ export function openai(opts: OpenAIProviderOptions): Provider {
       const messages = toOpenAIMessages(req.messages, req.system);
       const tools = buildTools(req.tools);
       try {
-        const stream = await client.chat.completions.create(
+        const stream = await getClient().chat.completions.create(
           {
             model: modelId,
             messages,

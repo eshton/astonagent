@@ -23,6 +23,8 @@ export interface ChatProps {
   system?: string;
   /** Optional title for a newly created conversation. */
   title?: string;
+  /** Extra fields merged into every POST body (e.g. `{ model }`). */
+  body?: Record<string, unknown>;
   components?: ChatSlots;
   className?: string;
   placeholder?: string;
@@ -46,6 +48,7 @@ export function Chat({
   endpoint = "/api/chat",
   system,
   title,
+  body,
   components = {},
   className,
   placeholder,
@@ -56,6 +59,7 @@ export function Chat({
   const chat = useAstonChat({
     conversationId,
     endpoint,
+    body,
     onConversationCreated,
     onError,
   });

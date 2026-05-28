@@ -3,10 +3,11 @@ export default function HomePage() {
     <div style={{ padding: 24, maxWidth: 720 }}>
       <h2 style={{ marginTop: 0 }}>Welcome to the astonagent demo</h2>
       <p>
-        Click <strong>+ New chat</strong> in the sidebar to start a streaming conversation. The
-        same UI is wired to two routes — Anthropic Claude and OpenAI — to demonstrate the
-        provider-agnostic loop. Use the <strong>Theme</strong> dropdown in the top-right to
-        watch CSS variables drive the entire look without remounting.
+        Click <strong>+ New chat</strong> in the sidebar to start a streaming conversation.
+        A single <code>/api/chat</code> route resolves the provider per request, so the
+        <strong> Model</strong> dropdown switches between Claude and OpenAI models on the fly —
+        only models whose API key is set will appear. Use the <strong>Theme</strong> dropdown
+        in the top-right to watch CSS variables drive the entire look without remounting.
       </p>
       <p>Try saying:</p>
       <ul>

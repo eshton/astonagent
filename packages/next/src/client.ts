@@ -11,6 +11,11 @@ export interface UseAstonChatOptions {
   endpoint?: string;
   /** Auto-load messages on mount if conversationId is set. Default true. */
   autoLoad?: boolean;
+  /**
+   * Extra fields merged into every POST body. Use this to pass a `model`,
+   * tenant id, or any value your route's provider resolver reads.
+   */
+  body?: Record<string, unknown>;
   onError?: (err: Error) => void;
   onConversationCreated?: (id: string) => void;
 }
@@ -112,6 +117,7 @@ export function useAstonChat(options: UseAstonChatOptions = {}): UseAstonChatRes
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            ...options.body,
             conversationId,
             message: { content: userMsg.content },
             system: sendOpts.system,

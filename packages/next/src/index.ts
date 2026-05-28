@@ -4,6 +4,8 @@ export type {
   ChatRouteOptions,
   ChatRoutePostBody,
   ChatRouteAuthContext,
+  ProviderInput,
+  ProviderResolverContext,
 } from "./route.js";
 
 export { sseEncodeEvent, sseHeartbeat, sseStream, sseDecode } from "./sse.js";

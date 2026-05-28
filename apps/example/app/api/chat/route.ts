@@ -1,16 +1,14 @@
 import { createChatRoute } from "@astonagent/next";
-import { anthropic } from "@astonagent/providers/anthropic";
 import { drizzleStore } from "@astonagent/db";
 import { db } from "@/lib/db";
 import { getWeather } from "@/lib/tools";
+import { resolveProvider } from "@/lib/resolve-provider";
 
 export const runtime = "nodejs";
 
 const route = createChatRoute({
-  provider: anthropic({
-    model: process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-5",
-    apiKey: process.env.ANTHROPIC_API_KEY,
-  }),
+  // Resolve the provider per request from the `model` field the client sends.
+  provider: ({ body }) => resolveProvider(body.model as string | undefined),
   store: drizzleStore(db),
   system: "You are a friendly assistant demoing the astonagent framework. Be concise.",
   tools: [getWeather],

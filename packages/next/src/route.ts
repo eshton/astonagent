@@ -14,8 +14,23 @@ export interface ChatRouteAuthContext {
   request: Request;
 }
 
+export interface ProviderResolverContext {
+  request: Request;
+  body: ChatRoutePostBody;
+}
+
+/**
+ * Either a fixed Provider, or a function that picks one per request (e.g. to
+ * support model switching from the client). The resolver receives the parsed
+ * request body, so the client can send a `model` field and the server can map
+ * it to the right provider.
+ */
+export type ProviderInput =
+  | Provider
+  | ((ctx: ProviderResolverContext) => Provider | Promise<Provider>);
+
 export interface ChatRouteOptions {
-  provider: Provider;
+  provider: ProviderInput;
   store: ConversationStore;
   system?: string | ((ctx: { conversationId: string }) => Promise<string> | string);
   tools?: ToolDef[];
@@ -38,6 +53,8 @@ export interface ChatRoutePostBody {
   system?: string;
   /** Optional: title for a freshly created conversation. */
   title?: string;
+  /** Arbitrary extra fields forwarded by the client `body` option (e.g. `model`). */
+  [key: string]: unknown;
 }
 
 export interface ChatRoute {
@@ -85,6 +102,20 @@ export function createChatRoute(opts: ChatRouteOptions): ChatRoute {
 
     if (!body?.message?.content || !Array.isArray(body.message.content)) {
       return new Response(JSON.stringify({ error: "message.content is required" }), {
+        status: 400,
+        headers: JSON_HEADERS,
+      });
+    }
+
+    let provider: Provider;
+    try {
+      provider =
+        typeof opts.provider === "function"
+          ? await opts.provider({ request: req, body })
+          : opts.provider;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to resolve provider";
+      return new Response(JSON.stringify({ error: message }), {
         status: 400,
         headers: JSON_HEADERS,
       });
@@ -153,7 +184,7 @@ export function createChatRoute(opts: ChatRouteOptions): ChatRoute {
 
         for await (const ev of runAgent({
           conversationId: cid,
-          provider: opts.provider,
+          provider,
           messages: history,
           system: effectiveSystem ?? undefined,
           tools: opts.tools,

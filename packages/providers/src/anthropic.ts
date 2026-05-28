@@ -110,9 +110,15 @@ function buildToolParam(tools?: ToolDef[]) {
 }
 
 export function anthropic(opts: AnthropicProviderOptions): Provider {
-  const client =
-    opts.client ??
-    new Anthropic({ apiKey: opts.apiKey ?? process.env.ANTHROPIC_API_KEY });
+  // Construct the SDK client lazily so a missing API key only errors when this
+  // provider is actually used to stream — not at import time.
+  let client: Anthropic | undefined = opts.client;
+  const getClient = (): Anthropic => {
+    if (!client) {
+      client = new Anthropic({ apiKey: opts.apiKey ?? process.env.ANTHROPIC_API_KEY });
+    }
+    return client;
+  };
   const modelId = opts.model;
   const defaultMaxTokens = opts.maxTokens ?? 4096;
   const cacheSystem = opts.cacheSystem ?? true;
@@ -144,7 +150,7 @@ export function anthropic(opts: AnthropicProviderOptions): Provider {
       let stopReason: StopReason = "end_turn";
 
       try {
-        const stream = await client.messages.create(params, { signal: req.abortSignal });
+        const stream = await getClient().messages.create(params, { signal: req.abortSignal });
         for await (const event of stream as AsyncIterable<Anthropic.Messages.RawMessageStreamEvent>) {
           switch (event.type) {
             case "message_start": {
