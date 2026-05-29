@@ -343,6 +343,62 @@
   text-decoration: underline;
 }
 
+.aston-error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 12px 4px;
+  padding: 10px 12px;
+  border: 1px solid #f1aeae;
+  background: #fdecec;
+  color: #9b1c1c;
+  border-radius: var(--aston-radius-sm);
+  font-size: 13px;
+}
+.aston-error-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #dc2626;
+  color: #fff;
+  font-weight: 700;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.aston-error-message {
+  flex: 1;
+  word-break: break-word;
+}
+.aston-error-retry {
+  border: 1px solid currentColor;
+  background: transparent;
+  color: inherit;
+  border-radius: var(--aston-radius-sm);
+  padding: 4px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.aston-error-retry:hover {
+  background: rgba(220, 38, 38, 0.1);
+}
+.aston-error-dismiss {
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  opacity: 0.7;
+  padding: 2px;
+}
+.aston-error-dismiss:hover {
+  opacity: 1;
+}
+
 .aston-composer {
   border-top: 1px solid var(--aston-border);
   padding: 12px;

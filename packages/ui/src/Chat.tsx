@@ -38,6 +38,8 @@ export interface ChatChildrenState {
   messages: AstonMessage[];
   send: (text: string, opts?: { system?: string; title?: string }) => Promise<void>;
   stop: () => void;
+  retry: () => void;
+  clearError: () => void;
   isStreaming: boolean;
   error: Error | null;
   conversationId: string | undefined;
@@ -71,6 +73,8 @@ export function Chat({
           messages: chat.messages,
           send: chat.send,
           stop: chat.stop,
+          retry: chat.retry,
+          clearError: chat.clearError,
           isStreaming: chat.isStreaming,
           error: chat.error,
           conversationId: chat.conversationId,
@@ -87,6 +91,24 @@ export function Chat({
         messages={chat.messages}
         components={components}
       />
+      {chat.error && (
+        <div className="aston-error" role="alert">
+          <span className="aston-error-icon" aria-hidden="true">
+            !
+          </span>
+          <span className="aston-error-message">{chat.error.message}</span>
+          <button className="aston-error-retry" onClick={chat.retry}>
+            Try again
+          </button>
+          <button
+            className="aston-error-dismiss"
+            onClick={chat.clearError}
+            aria-label="Dismiss error"
+          >
+            ✕
+          </button>
+        </div>
+      )}
       {ComposerComp ? (
         <ComposerComp
           onSubmit={(text) => chat.send(text, { system, title })}

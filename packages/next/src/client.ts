@@ -27,6 +27,10 @@ export interface UseAstonChatResult {
   error: Error | null;
   send: (text: string, opts?: { system?: string; title?: string }) => Promise<void>;
   stop: () => void;
+  /** Re-run the last user message after an error. */
+  retry: () => void;
+  /** Dismiss the current error without retrying. */
+  clearError: () => void;
   /** Reset local state. Does not touch server. */
   reset: () => void;
 }
@@ -50,6 +54,9 @@ export function useAstonChat(options: UseAstonChatOptions = {}): UseAstonChatRes
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const lastSendRef = useRef<{ text: string; opts: { system?: string; title?: string } } | null>(
+    null,
+  );
 
   // Keep conversationId in sync when prop changes
   useEffect(() => {
@@ -94,6 +101,7 @@ export function useAstonChat(options: UseAstonChatOptions = {}): UseAstonChatRes
     async (text: string, sendOpts: { system?: string; title?: string } = {}) => {
       if (!text.trim()) return;
       setError(null);
+      lastSendRef.current = { text, opts: sendOpts };
 
       const userMsg: AstonMessage = {
         id: newClientId(),
@@ -133,7 +141,16 @@ export function useAstonChat(options: UseAstonChatOptions = {}): UseAstonChatRes
         }
 
         if (!res.ok || !res.body) {
-          throw new Error(`Chat request failed: ${res.status}`);
+          // Surface the server's error message (e.g. a missing API key) instead
+          // of a bare status code.
+          let message = `Request failed (${res.status})`;
+          try {
+            const errBody = (await res.json()) as { error?: string };
+            if (errBody?.error) message = errBody.error;
+          } catch {
+            // non-JSON body — keep the status message
+          }
+          throw new Error(message);
         }
 
         for await (const ev of sseDecode(res.body) as AsyncIterable<StreamEvent>) {
@@ -219,6 +236,7 @@ export function useAstonChat(options: UseAstonChatOptions = {}): UseAstonChatRes
         }
       } catch (err) {
         const e = err instanceof Error ? err : new Error(String(err));
+        // A user-initiated stop (abort) is not an error — just end quietly.
         if (e.name !== "AbortError") {
           setError(e);
           options.onError?.(e);
@@ -226,10 +244,33 @@ export function useAstonChat(options: UseAstonChatOptions = {}): UseAstonChatRes
       } finally {
         abortRef.current = null;
         setIsStreaming(false);
+        // Drop a trailing assistant bubble that never produced content (e.g. an
+        // error or stop before the first token) so it doesn't hang as "typing".
+        if (activeAssistantId) {
+          const id = activeAssistantId;
+          setMessages((prev) =>
+            prev.filter((m) => !(m.id === id && m.content.length === 0)),
+          );
+        }
       }
     },
     [endpoint, conversationId, options],
   );
 
-  return { messages, conversationId, isStreaming, error, send, stop, reset };
+  const retry = useCallback(() => {
+    const last = lastSendRef.current;
+    if (!last) return;
+    setError(null);
+    // Remove the last user message and anything after it (the failed assistant
+    // turn); send() re-adds the user message and starts a fresh attempt.
+    setMessages((prev) => {
+      const idx = prev.map((m) => m.role).lastIndexOf("user");
+      return idx === -1 ? prev : prev.slice(0, idx);
+    });
+    void send(last.text, last.opts);
+  }, [send]);
+
+  const clearError = useCallback(() => setError(null), []);
+
+  return { messages, conversationId, isStreaming, error, send, stop, retry, clearError, reset };
 }

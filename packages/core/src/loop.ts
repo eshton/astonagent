@@ -146,6 +146,15 @@ export async function* runAgent(opts: RunOptions): AsyncIterable<StreamEvent> {
       }
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
+      // Persist whatever the assistant produced before the failure or abort so
+      // a stopped or errored turn isn't lost on refresh.
+      if (pendingText) {
+        assistantMsg.content.push({ type: "text", text: pendingText });
+        pendingText = "";
+      }
+      if (assistantMsg.content.length > 0) {
+        await hooks.onMessageComplete?.(assistantMsg, ctx);
+      }
       await hooks.onError?.(error, ctx);
       yield { type: "error", error: { message: error.message, name: error.name } };
       return;
